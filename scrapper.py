@@ -1,5 +1,6 @@
 import logging
 import requests
+import hashlib
 
 from abc import ABC, abstractmethod
 from bs4 import BeautifulSoup
@@ -84,7 +85,9 @@ class AdvfnScrapper(BaseScrapper):
 		news_content_str = news_page.find('div', {'class': 'post-content post-dymamic'}).get_text()
 		news_content_html = str(news_page.find('div', {'class': 'post-content post-dymamic'}))
 		
-		return dict(title = news_title,
+		return dict(id = hashlib.md5(news_url.encode()).hexdigest(),
+					title = news_title,
+					url = news_url,
 					category = news_category,
 					source = news_source,
 					posted_on = news_dt,
@@ -92,11 +95,3 @@ class AdvfnScrapper(BaseScrapper):
 					content_html = news_content_html)
 
 
-if __name__ == '__main__':
-	logging.basicConfig( format='%(asctime)s - %(module)s - %(funcName)s - %(levelname)s - %(message)s', level=logging.DEBUG)
-	scrapper = AdvfnScrapper('https://br.advfn.com')
-	news_url = scrapper.fetch_news('ENJU3')
-	
-	news = scrapper.parse_news(news_url[0])
-
-	print(news)
