@@ -73,11 +73,30 @@ class AdvfnScrapper(BaseScrapper):
 
 
 	def parse_news(self, news_url):
-		raise NotImplemented('TODO')
+		logging.info(f'requesting news on {news_url}')
+		news_response = requests.get(news_url)
+		news_page = BeautifulSoup(news_response.text, 'html.parser')
+		
+		news_title = news_page.h1.get_text()
+		news_category = news_page.find('span', {'class': 'cat-title'}).get_text()
+		news_source = news_page.find('span', {'class': 'posted-by'}).a.get_text()
+		news_dt = news_page.find('span', {'class': 'posted-on'}).time['datetime']
+		news_content_str = news_page.find('div', {'class': 'post-content post-dymamic'}).get_text()
+		news_content_html = str(news_page.find('div', {'class': 'post-content post-dymamic'}))
+		
+		return dict(title = news_title,
+					category = news_category,
+					source = news_source,
+					posted_on = news_dt,
+					content_str = news_content_str,
+					content_html = news_content_html)
 
 
 if __name__ == '__main__':
 	logging.basicConfig( format='%(asctime)s - %(module)s - %(funcName)s - %(levelname)s - %(message)s', level=logging.DEBUG)
 	scrapper = AdvfnScrapper('https://br.advfn.com')
 	news_url = scrapper.fetch_news('ENJU3')
-	print(news_url)
+	
+	news = scrapper.parse_news(news_url[0])
+
+	print(news)
