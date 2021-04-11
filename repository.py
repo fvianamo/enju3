@@ -11,16 +11,16 @@ class Repository:
 		- collection: nome da collection onde os dados devem ser armazenados
 	"""
 	def __init__(self, **kwargs):
-		mongo_url = os.environ['MONGO_URL']
-		if mongo_url:
+		MONGO_URL = os.environ['MONGO_URL']
+		if MONGO_URL:
 			logging.info('found MongoDB string connection on environment')
 
 		assert kwargs['database']
 		self.database = kwargs['database']
 		assert kwargs['collection']
-		self.collection = kwargs['database']
+		self.collection = kwargs['collection']
 
-		client = MongoClient(mongo_url)
+		client = MongoClient(MONGO_URL)
 
 		try:
 			client[self.database][self.collection].count_documents({})
@@ -33,8 +33,10 @@ class Repository:
 
 	def save(self, documents):
 		if isinstance(documents, list):
+			logging.info(f'saving {len(documents)} documents...')
 			return self.conn[self.database][self.collection].insert_many(documents).inserted_ids
 		elif isinstance(documents, dict):
+			logging.info(f'saving a document...')
 			return self.conn[self.database][self.collection].insert_one(documents).inserted_id
 		else:
 			raise Exception(f'list or a dict should be provided, received {type(documents)} instead')
